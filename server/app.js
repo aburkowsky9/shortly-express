@@ -94,18 +94,29 @@ app.post('/signup',
 
 });
 
-// app.post('/login', 
-// (req, res, next) => {
-//   var username = req.body.username;
-//   var password = req.body.password;
-//   return models.Users.get({username: username})
-//     .then(data => {
-//       return models.Users.compare(password, data.password, data.salt);
-//   }).then(answer => {
-//     console.log(answer);
-//   })
-//     // .then render or error
-// });
+app.post('/login', 
+(req, res, next) => {
+  var username = req.body.username;
+  var password = req.body.password;
+  return models.Users.get({username: username})
+  .then(data => {
+    if (!data) {
+      res.redirect('/login');
+    } else {
+      return models.Users.compare(password, data.password, data.salt);
+    }
+  })
+  .then(answer => {
+    if (answer === undefined) {
+      res.end();
+    }
+    else if (answer) {
+      res.redirect('/');
+    } else {
+      res.redirect('/login');
+    }
+  })
+});
 
 
 /************************************************************/
