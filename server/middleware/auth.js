@@ -5,20 +5,39 @@ module.exports.createSession = (req, res, next) => {
   if (!Object.keys(req.cookies).length) {
     models.Sessions.create()
     .then(data => {
-      console.log(data);
-      models.Sessions.get({id: 1});
+      models.Sessions.get({id: data.insertId})
+      .then(data => {
+        res.cookie("shortlyid", data.hash);
+        req.session = {hash: data.hash, userId: null, user: { username: null }};
+        next();
+      })
     })
+  } else {
+    models.Sessions.get({hash: req.cookies.shortlyid})
     .then(data => {
-      console.log(data);
+      if (!data) {
+        models.Sessions.create()
+          .then(data => {
+            models.Sessions.get({id: data.insertId})
+            .then(data => {
+              res.cookie("shortlyid", data.hash); //maybe need to overwrite
+              req.session = {hash: data.hash, userId: null, user: { username: null }};
+              next();
+            })
+          })
+      } else if (data.userId === null) {
+        req.session = {hash: data.hash, userId: null, user: { username: null }};
+        next();
+      } else {
+        models.Users.get({id: data.userId})
+        .then(data => {
+          req.session = {hash: data.hash, userId: data.id, user: { username: data.username }};
+          next();
+        })
+        
+      }
     })
-    next();
   }
-  // find shortly id hash
-  // query sessions db with this hash
-  // if valid
-    // get user id
-    // add user id to session 
-  // else
 };
 
 /************************************************************/
