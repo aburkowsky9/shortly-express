@@ -5,7 +5,6 @@ const partials = require('express-partials');
 const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
-
 const app = express();
 
 app.set('views', `${__dirname}/views`);
@@ -14,7 +13,8 @@ app.use(partials());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
-
+app.use(require ('./middleware/cookieParser'));
+app.use(Auth.createSession);
 
 
 app.get('/', 
@@ -77,6 +77,8 @@ app.post('/links',
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+
+
 app.post('/signup',
 (req, res, next) => {
   var username = req.body.username;
@@ -85,11 +87,13 @@ app.post('/signup',
     username,
     password
   })
-  .then(() => {
+  .then((something) => {
     res.redirect('/');
+    next();
   })
   .error(() => {
     res.redirect('/signup');
+    next();
   })
 
 });

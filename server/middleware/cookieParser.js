@@ -10,7 +10,9 @@ const parseCookies = (req, res, next) => {
       req.cookies[cookieSplit[0]] = cookieSplit[1];
     })
     next();
-  }  
+  }
+  
+  // return next();  
 };
 
 module.exports = parseCookies;
