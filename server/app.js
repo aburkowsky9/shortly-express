@@ -83,18 +83,20 @@ app.post('/signup',
 (req, res, next) => {
   var username = req.body.username;
   var password = req.body.password;
-  return models.Users.create({
-    username,
-    password
-  })
-  .then((something) => {
-    res.redirect('/');
-    next();
-  })
-  .error(() => {
-    res.redirect('/signup');
-    next();
-  })
+  
+
+  return models.Users.create({ username, password })
+    .then((result) => {
+       if (!result) {
+        throw new Error('username taken!')
+       } else {
+        res.redirect('/');
+       }
+    })
+    .catch(() => {
+      res.redirect('/signup');
+      next();
+    })
 
 });
 
@@ -102,25 +104,61 @@ app.post('/login',
 (req, res, next) => {
   var username = req.body.username;
   var password = req.body.password;
+  
+  // var promise = models.Users.get({username: username});
+  
+  
+  // promise.then(result => {
+  //   if (err) {
+  //     console.log('HERE!')
+  //     throw err;
+  //   } else {
+  //     return result;
+  //   }
+  // })
   return models.Users.get({username: username})
-  .then(data => {
-    if (!data) {
+    .then(data => {
+      if (!data) {
+        throw new Error('user does not exist!');
+      } else {
+        return models.Users.compare(password, data.password, data.salt);
+      }
+    })
+    .then(answer => {
+      if (!answer) {
+        res.redirect('/login');
+        next();
+      } else {
+        res.redirect('/');
+        next();
+      }
+    })
+    .catch(() => {
       res.redirect('/login');
-    } else {
-      return models.Users.compare(password, data.password, data.salt);
-    }
-  })
-  .then(answer => {
-    if (answer === undefined) {
-      res.end();
-    }
-    else if (answer) {
-      res.redirect('/');
-    } else {
-      res.redirect('/login');
-    }
-  })
+      next();
+    })
 });
+  
+  
+  
+  // return models.Users.get({username: username})
+  // .then(data => {
+  //   if (!data) {
+  //     res.redirect('/login');
+  //   } else {
+  //     return models.Users.compare(password, data.password, data.salt);
+  //   }
+  // })
+  // .then(answer => {
+  //   if (answer === undefined) {
+  //     res.end();
+  //   }
+  //   else if (answer) {
+  //     res.redirect('/');
+  //   } else {
+  //     res.redirect('/login');
+  //   }
+  // })
 
 
 /************************************************************/

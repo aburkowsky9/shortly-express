@@ -1,4 +1,5 @@
 const parseCookies = (req, res, next) => {
+  console.log(req.get('Cookie'));
   var cookie = req.headers.cookie;
   if (!cookie) {
     next();
@@ -12,7 +13,6 @@ const parseCookies = (req, res, next) => {
     next();
   }
   
-  // return next();  
 };
 
 module.exports = parseCookies;
